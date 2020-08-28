@@ -23,50 +23,53 @@ def transE(triplets:np.ndarray,
            batch_size=1024,
            num_epochs=50,
            callbacks=None,
+           keras_model=None,
            return_keras_model=False):
     # load dataset
     dataset = TransEDataset(triplets)
+    if keras_model is None:
+        # build transE Model
+        pos_sub_inputs = Input(shape=(), name='pos_subject')
+        neg_sub_inputs = Input(shape=(), name='neg_subject')
+        pos_obj_inputs = Input(shape=(), name='pos_object')
+        neg_obj_inputs = Input(shape=(), name='neg_object')
+        rel_inputs = Input(shape=(), name='relation')
 
-    # build transE Model
-    pos_sub_inputs = Input(shape=(), name='pos_subject')
-    neg_sub_inputs = Input(shape=(), name='neg_subject')
-    pos_obj_inputs = Input(shape=(), name='pos_object')
-    neg_obj_inputs = Input(shape=(), name='neg_object')
-    rel_inputs = Input(shape=(), name='relation')
+        inputs = {
+            "pos_subject": pos_sub_inputs,
+            "neg_subject": neg_sub_inputs,
+            "pos_object": pos_obj_inputs,
+            "neg_object": neg_obj_inputs,
+            "relation": rel_inputs
+        }
 
-    inputs = {
-        "pos_subject": pos_sub_inputs,
-        "neg_subject": neg_sub_inputs,
-        "pos_object": pos_obj_inputs,
-        "neg_object": neg_obj_inputs,
-        "relation": rel_inputs
-    }
+        # 초기화 방식은 논문에 나와있는 방식으로 구성
+        init_range = 6/np.sqrt(embed_size)
+        init_op = RandomUniform(-init_range, init_range)
 
-    # 초기화 방식은 논문에 나와있는 방식으로 구성
-    init_range = 6/np.sqrt(embed_size)
-    init_op = RandomUniform(-init_range, init_range)
+        node_layer = Embedding(input_dim=len(dataset.nodes),
+                               output_dim=embed_size,
+                               embeddings_initializer=init_op,
+                               name='node_embedding')
+        edge_layer = Embedding(input_dim=len(dataset.edges),
+                               output_dim=embed_size,
+                               embeddings_initializer=init_op,
+                               name='edge_embedding')
 
-    node_layer = Embedding(input_dim=len(dataset.nodes),
-                           output_dim=embed_size,
-                           embeddings_initializer=init_op,
-                           name='node_embedding')
-    edge_layer = Embedding(input_dim=len(dataset.edges),
-                           output_dim=embed_size,
-                           embeddings_initializer=init_op,
-                           name='edge_embedding')
+        pos_sub = node_layer(pos_sub_inputs)
+        neg_sub = node_layer(neg_sub_inputs)
+        pos_obj = node_layer(pos_obj_inputs)
+        neg_obj = node_layer(neg_obj_inputs)
+        rel = edge_layer(rel_inputs)
 
-    pos_sub = node_layer(pos_sub_inputs)
-    neg_sub = node_layer(neg_sub_inputs)
-    pos_obj = node_layer(pos_obj_inputs)
-    neg_obj = node_layer(neg_obj_inputs)
-    rel = edge_layer(rel_inputs)
+        score = TransEScore(ord, margin)([pos_sub, neg_sub, pos_obj, neg_obj, rel])
+        model = Model(inputs, score)
 
-    score = TransEScore(ord, margin)([pos_sub, neg_sub, pos_obj, neg_obj, rel])
-    model = Model(inputs, score)
-
-    # Compile transE Model
-    model.add_loss(score)
-    model.compile(optimizer=Adagrad(learning_rate))
+        # Compile transE Model
+        model.add_loss(score)
+        model.compile(optimizer=Adagrad(learning_rate))
+    else:
+        model = keras_model
 
     # Train transE Model
     try:
@@ -94,35 +97,39 @@ def complEx(triplets:np.ndarray,
             batch_size=1024,
             num_epochs=50,
             callbacks=None,
+            keras_model=None,
             return_keras_model=False):
     # Load dataset
     dataset = ComplExDataset(triplets)
 
-    # Build complEx Model
-    sub_inputs = Input(shape=(), name='subject')
-    obj_inputs = Input(shape=(), name='object')
-    rel_inputs = Input(shape=(), name='relation')
-    inputs = {"subject": sub_inputs, "object": obj_inputs, "relation": rel_inputs}
+    if keras_model is None:
+        # Build complEx Model
+        sub_inputs = Input(shape=(), name='subject')
+        obj_inputs = Input(shape=(), name='object')
+        rel_inputs = Input(shape=(), name='relation')
+        inputs = {"subject": sub_inputs, "object": obj_inputs, "relation": rel_inputs}
 
-    node_layer = Embedding(input_dim=len(dataset.nodes),
-                           output_dim=embed_size,
-                           embeddings_initializer=GlorotUniform(),
-                           name='node_embedding')
-    edge_layer = Embedding(input_dim=len(dataset.edges),
-                           output_dim=embed_size,
-                           embeddings_initializer=GlorotUniform(),
-                           name='edge_embedding')
+        node_layer = Embedding(input_dim=len(dataset.nodes),
+                               output_dim=embed_size,
+                               embeddings_initializer=GlorotUniform(),
+                               name='node_embedding')
+        edge_layer = Embedding(input_dim=len(dataset.edges),
+                               output_dim=embed_size,
+                               embeddings_initializer=GlorotUniform(),
+                               name='edge_embedding')
 
-    sub_embed = node_layer(sub_inputs)
-    rel_embed = edge_layer(rel_inputs)
-    obj_embed = node_layer(obj_inputs)
+        sub_embed = node_layer(sub_inputs)
+        rel_embed = edge_layer(rel_inputs)
+        obj_embed = node_layer(obj_inputs)
 
-    outputs = ComplexDotScore(n3_reg)([sub_embed, rel_embed, obj_embed])
-    model = Model(inputs, outputs, name='complEx')
+        outputs = ComplexDotScore(n3_reg)([sub_embed, rel_embed, obj_embed])
+        model = Model(inputs, outputs, name='complEx')
 
-    # Compile complEx Model
-    loss = BinaryCrossentropy(from_logits=True, reduction='sum')
-    model.compile(optimizer=Adagrad(learning_rate), loss=loss, metrics=[loss])
+        # Compile complEx Model
+        loss = BinaryCrossentropy(from_logits=True, reduction='sum')
+        model.compile(optimizer=Adagrad(learning_rate), loss=loss, metrics=[loss])
+    else:
+        model = keras_model
 
     # Train complEx Model
     try:
