@@ -68,10 +68,13 @@ def transE(triplets:np.ndarray,
     model.compile(optimizer=Adagrad(learning_rate))
 
     # Train transE Model
-    for i in range(num_epochs):
-        model.fit(dataset(batch_size),
-                  epochs=i+1, initial_epoch=i,
-                  callbacks=callbacks)
+    try:
+        for i in range(num_epochs):
+            model.fit(dataset(batch_size),
+                      epochs=i+1, initial_epoch=i,
+                      callbacks=callbacks)
+    except KeyboardInterrupt:
+        pass
 
     # Extract Embedding
     node_embedding, edge_embedding = weight2embedding(model, dataset)
@@ -117,11 +120,14 @@ def complEx(triplets:np.ndarray,
     model.compile(optimizer=Adagrad(learning_rate), loss=loss, metrics=[loss])
 
     # Train complEx Model
-    for i in range(num_epochs):
-        model.fit(dataset(batch_size, num_negs),
-                  epochs=i+1, initial_epoch=i,
-                  class_weight={1: 1., 0: 1 / num_negs},
-                  callbacks=callbacks)
+    try:
+        for i in range(num_epochs):
+            model.fit(dataset(batch_size, num_negs),
+                      epochs=i+1, initial_epoch=i,
+                      class_weight={1: 1., 0: 1 / num_negs},
+                      callbacks=callbacks)
+    except KeyboardInterrupt:
+        pass
 
     # Extract Embedding
     node_embedding, edge_embedding = weight2embedding(model, dataset)
