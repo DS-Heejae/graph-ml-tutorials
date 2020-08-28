@@ -22,7 +22,8 @@ def transE(triplets:np.ndarray,
            learning_rate=2e-1,
            batch_size=1024,
            num_epochs=50,
-           callbacks=None):
+           callbacks=None,
+           return_keras_model=False):
     # load dataset
     dataset = TransEDataset(triplets)
 
@@ -79,7 +80,10 @@ def transE(triplets:np.ndarray,
     # Extract Embedding
     node_embedding, edge_embedding = weight2embedding(model, dataset)
 
-    return node_embedding, edge_embedding
+    if return_keras_model:
+        return node_embedding, edge_embedding, model
+    else:
+        return node_embedding, edge_embedding
 
 
 def complEx(triplets:np.ndarray,
@@ -89,7 +93,8 @@ def complEx(triplets:np.ndarray,
             num_negs=20,
             batch_size=1024,
             num_epochs=50,
-            callbacks=None):
+            callbacks=None,
+            return_keras_model=False):
     # Load dataset
     dataset = ComplExDataset(triplets)
 
@@ -132,7 +137,10 @@ def complEx(triplets:np.ndarray,
     # Extract Embedding
     node_embedding, edge_embedding = weight2embedding(model, dataset)
 
-    return node_embedding, edge_embedding
+    if return_keras_model:
+        return node_embedding, edge_embedding, model
+    else:
+        return node_embedding, edge_embedding
 
 
 def weight2embedding(model, dataset):
