@@ -1,5 +1,4 @@
 ## GraphEmbedding
-----
 
 Python Graph Embedding Libary for Knowledge graph
 
