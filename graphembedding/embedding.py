@@ -65,7 +65,7 @@ def transE(triplets:np.ndarray,
         for i in range(num_epochs):
             model.fit(dataset(batch_size),
                       epochs=i+1, initial_epoch=i,
-                      callbacks=callbacks)
+                      shuffle=False, callbacks=callbacks)
     except KeyboardInterrupt:
         pass
 
@@ -121,7 +121,7 @@ def complEx(triplets:np.ndarray,
             model.fit(dataset(batch_size, num_negs),
                       epochs=i+1, initial_epoch=i,
                       class_weight={1: 1., 0: 1 / num_negs},
-                      callbacks=callbacks)
+                      shuffle=False, callbacks=callbacks)
     except KeyboardInterrupt:
         pass
 
