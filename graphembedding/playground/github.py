@@ -12,7 +12,12 @@ def load_github(name='linux',
                 k_core=5):
     """knowledge graph Dataset을 불러오는 함수
     현재 3가지 github knowledge graph가 구성되어 있음
-    name : linux, tensorflow, vim
+    name : (linux, tensorflow, vim)
+    event_types : (CommitCommentEvent, CreateEvent, DeleteEvent,
+                   ForkEvent, GollumEvent, IssueCommentEvent,
+                   IssuesEvent, MemberEvent, PublicEvent,
+                   PullRequestEvent, PullRequestReviewCommentEvent,
+                   PushEvent, ReleaseEvent, WatchEvent)
     """
     from tensorflow.keras.utils import get_file
     fpath = get_file("github-playground.h5",
