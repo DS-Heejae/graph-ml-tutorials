@@ -9,7 +9,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.utils import get_custom_objects
 
 
-class ComplexDotScore(Layer):
+class ComplExDotScore(Layer):
     """ complEx Scoring Function
         - Based on Hermitian (or sesquilinear) dot product
         - score = Re(<relation, subject, object>)
@@ -88,4 +88,4 @@ class TransEScore(Layer):
 
 
 get_custom_objects().update(
-    {"ComplexDotScore": ComplexDotScore, "TransEScore":TransEScore})
+    {"ComplexDotScore": ComplExDotScore, "TransEScore":TransEScore})
